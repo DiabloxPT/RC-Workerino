@@ -139,7 +139,23 @@ public class ChatServer
     // Decode and print the message to stdout
     String message = decoder.decode(buffer).toString();
     System.out.print( message );
-
+    // daqui
+    String[] msg_broken = message.split("\\s");
+    // /nick /join /leave /bye
+    if(msg_broken[0].equals("//nick")){
+    
+    }
+    else if(msg_broken[0].equals("//join")){
+    	
+    }
+    else if (msg_broken[0].equals("/leave")) {
+		
+	}
+    else if (msg_broken[0].equals("/bye")) {
+		
+	}     
+    
+    //aqui
     return true;
   }
 }
