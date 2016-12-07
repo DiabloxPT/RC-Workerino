@@ -5,6 +5,23 @@ import java.nio.channels.*;
 import java.nio.charset.*;
 import java.util.*;
 
+class User {
+	
+	private String nick;
+	private String state;
+	private SocketChannel sc;
+	private String chatRoom;
+	
+	public User(SocketChannel sChannel) {
+		this.nick = "";
+		this.state = "init";
+		this.sc = sChannel;
+		this.chatRoom = null;
+	}
+	
+	
+}
+
 public class ChatServer
 {
   // A pre-allocated buffer for the received data
