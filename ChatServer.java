@@ -10,19 +10,19 @@ class User {
 	private String nick;
 	private String state;
 	private SocketChannel sc;
-	private String chatRoom;
+	private chatRoom room;
 	
 	public User(SocketChannel sChannel) {
 		this.nick = "";
 		this.state = "init";
 		this.sc = sChannel;
-		this.chatRoom = null;
+		this.room = null;
 	}
 	
 	public String getNick(){return this.nick;}
 	public String getState(){return this.state;}
 	public SocketChannel getSocketChannel(){return this.sc;}
-	public String chatRoom(){return this.chatRoom;}
+	public chatRoom getChatRoom(){return this.room;}
 	
 }
 
@@ -51,8 +51,8 @@ public class ChatServer
   static private final CharsetDecoder decoder = charset.newDecoder();
 
   // users and chat rooms
-  HashMap<SocketChannel,User> chatters = new HashMap<SocketChannel,User>();
-  HashMap<String,chatRoom> rooms = new HashMap<String,chatRoom>();
+  static private HashMap<SocketChannel,User> chatters = new HashMap<SocketChannel,User>();
+  static private HashMap<String,chatRoom> rooms = new HashMap<String,chatRoom>();
 
   static public void main( String args[] ) throws Exception {
     // Parse port from command line
@@ -184,7 +184,33 @@ public class ChatServer
   }
   
   // handle the message
-  static private giveResponse(String message,SocketChannel socket){
-	  
-  }
-}
+  static private void giveResponse(String message,SocketChannel socket){
+	  // se for comando
+	  if(message.charAt(0)=='/'){
+		  String[] msg_pieces = message.split("\\s");
+		  switch(msg_pieces[0]){
+		  case "/nick":
+			  //init 	/nick nome && !disponível(nome)
+			  //init 	/nick nome && disponível(nome)
+			  //outside 	/nick nome && !disponível(nome)
+			  //outside 	/nick nome && disponível(nome)
+			  //inside 	/nick nome && !disponível(nome)
+			  //inside 	/nick nome && disponível(nome)
+			  break;
+		  case "/join":
+			  break;
+		  case "/leave":
+			  break;
+		  case "/bye":
+			  break;
+		  default:
+			  break;
+		  }
+	  }
+	  // se nao for comando
+	  else{
+		  
+	  }
+  }	// end of method
+  
+}// end of ChatServer
