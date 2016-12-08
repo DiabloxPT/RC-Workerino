@@ -68,6 +68,8 @@ public class ChatServer
 	static private HashMap<SocketChannel,User> chatters = new HashMap<SocketChannel,User>();
 	static private HashMap<String,User> nicks = new HashMap<String,User>();
 	static private HashMap<String,chatRoom> rooms = new HashMap<String,chatRoom>();
+	static private chatRoom sala1 = new chatRoom("sala1");
+	static private chatRoom sala2 = new chatRoom("sala2");
 
 	static public void main( String args[] ) throws Exception {
 		// Parse port from command line

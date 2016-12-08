@@ -84,7 +84,7 @@ public class ChatClient {
 		// PREENCHER AQUI com código que envia a mensagem ao servidor
 		tellServer.println(message); // imprime no sv
 		command = message;
-		String[] tokens = command.split("\\s"); // espaços em branco
+		//String[] tokens = command.split("\\s"); // espaços em branco
 		tellServer.flush();
 	}
 
@@ -111,6 +111,7 @@ public class ChatClient {
 				// saida com sucesso do chat
 				else if(broken_msg[0].equals("BYE")){
 					printMessage("Aaaaaaaaaaaaaaaaand i am outta here!"+"\n");
+					this.clientSocket.close();
 				}
 			}
 
