@@ -68,9 +68,7 @@ public class ChatServer
 	static private HashMap<SocketChannel,User> chatters = new HashMap<SocketChannel,User>();
 	static private HashMap<String,User> nicks = new HashMap<String,User>();
 	static private HashMap<String,chatRoom> rooms = new HashMap<String,chatRoom>();
-	static private chatRoom sala1 = new chatRoom("sala1");
-	static private chatRoom sala2 = new chatRoom("sala2");
-
+	
 	static public void main( String args[] ) throws Exception {
 		// Parse port from command line
 		int port = Integer.parseInt( args[0] );
@@ -273,6 +271,8 @@ public class ChatServer
 				}
 				break;
 			case "/join":
+				// se a sala nao existir, tem de a criar
+				if(!rooms.containsKey(msg_pieces)[1]) chatRoom aux = new chatRoom(msg_pieces[1]);
 				//outside 	/join sala
 				if(aux.getState().equals("outside")){
 					aux.setChatRoom(rooms.get(msg_pieces[1]));
