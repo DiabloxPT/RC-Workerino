@@ -50,6 +50,9 @@ public class ChatServer
   static private final Charset charset = Charset.forName("UTF8");
   static private final CharsetDecoder decoder = charset.newDecoder();
 
+  // users and chat rooms
+  HashMap<SocketChannel,User> chatters = new HashMap<SocketChannel,User>();
+  HashMap<String,chatRoom> rooms = new HashMap<String,chatRoom>();
 
   static public void main( String args[] ) throws Exception {
     // Parse port from command line
@@ -175,7 +178,13 @@ public class ChatServer
     // Decode and print the message to stdout
     String message = decoder.decode(buffer).toString();
     System.out.print( message );
-
+    giveResponse(message,sc);
+    
     return true;
+  }
+  
+  // handle the message
+  static private giveResponse(String message,SocketChannel socket){
+	  
   }
 }
