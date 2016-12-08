@@ -48,7 +48,7 @@ class chatRoom{
 	}
 
 	public String getRoomName(){return this.nome;}
-	public HashMap<String,User> getAllClients(){return this.chatters;}
+	public User[] getAllClients(){return this.chatters.values().toArray(new User[this.chatters.size()]);}
 	public void addChatter(User chatter) {this.chatters.put(chatter.getNick(), chatter);}
 	public void removeChatter(User chatter) {this.chatters.remove(chatter.getNick());}
 
@@ -66,6 +66,7 @@ public class ChatServer
 
 	// users and chat rooms
 	static private HashMap<SocketChannel,User> chatters = new HashMap<SocketChannel,User>();
+	static private HashMap<String,User> nicks = new HashMap<String,User>();
 	static private HashMap<String,chatRoom> rooms = new HashMap<String,chatRoom>();
 
 	static public void main( String args[] ) throws Exception {
@@ -213,46 +214,59 @@ public class ChatServer
 				//init
 				if(aux.getState().equals("init")){
 					///nick nome && !disponível(nome)  
-					if(chatters.containsKey(msg_pieces[1])){
+					if(nicks.containsKey(msg_pieces[1])){
 						// ERROR
-						System.out.println("eorororororo");
 						serverResponse(socket, "ERROR\n");
 						return;
 					}
 					///nick nome && disponível(nome)
-					else if(!chatters.containsKey(msg_pieces[1])){
+					else if(!nicks.containsKey(msg_pieces[1])){
 						aux.setNick(msg_pieces[1]);
 						aux.setState("outside");
+						nicks.put(msg_pieces[1], aux);
 						// OK
-						System.out.println("eorororororo");
 						serverResponse(socket, "OK\n");
 						return;
 					}
 				}
 				//outside
-				else if(aux.getState().equals("ouside")){
+				else if(aux.getState().equals("outside")){
 					///nick nome && !disponível(nome)
-					if(chatters.containsKey(msg_pieces[1])){
+					if(nicks.containsKey(msg_pieces[1])){
 						//ERROR
 						//mantem nome antigo
+						serverResponse(socket, "ERROR\n");
+						return;
 					}
 					///nick nome && disponível(nome)
-					else if(!chatters.containsKey(msg_pieces[1])){
+					else if(!nicks.containsKey(msg_pieces[1])){
+						nicks.remove(aux.getNick());
 						//OK
 						aux.setNick(msg_pieces[1]);
+						nicks.put(msg_pieces[1], aux);
+						serverResponse(socket, "OK\n");
+						return;
 					}
 				}
 				//inside
 				else if(aux.getState().equals("inside")){
 					///nick nome && !disponível(nome)
-					if(chatters.containsKey(msg_pieces[1])){
+					if(nicks.containsKey(msg_pieces[1])){
 						//ERROR
+						serverResponse(socket, "ERROR\n");
+						return;
 					}
 					///nick nome && disponível(nome)
 					else if (!chatters.containsKey(msg_pieces[1])){
 						// OK para user que mudou 
 						// NEWNICK antigo novo para os outros da sala
+						nicks.remove(aux.getNick());
 						aux.setNick(msg_pieces[1]);
+						nicks.put(msg_pieces[1], aux);
+						User[] roomUsers = aux.getChatRoom().getAllClients();
+						System.out.println(roomUsers);
+						serverResponse(socket, "OK\n");
+						return;
 					}
 				}
 				break;
