@@ -20,10 +20,16 @@ class User {
 	}
 	
 	public String getNick(){return this.nick;}
-	public String getState(){return this.state;}
-	public SocketChannel getSocketChannel(){return this.sc;}
-	public chatRoom getChatRoom(){return this.room;}
+	public void setNick(String s){this.nick = s;}
 	
+	public String getState(){return this.state;}
+	public void setState(String s){this.state = s;}
+	
+	public SocketChannel getSocketChannel(){return this.sc;}
+	public void setSocketChannel(SocketChannel sc){this.sc = sc;}
+	
+	public chatRoom getChatRoom(){return this.room;}
+	public void setChatRoom(chatRoom c){this.room = c;}
 }
 
 class chatRoom{
@@ -178,7 +184,14 @@ public class ChatServer
     // Decode and print the message to stdout
     String message = decoder.decode(buffer).toString();
     System.out.print( message );
+    // mensagem de um user sem nick
+    if(!chatters.containsKey(sc)){
+    	User aux = new User(sc);
+    	chatters.put(sc, aux);
+    }
+    // aqui responde a mensagem, independentemente do estado ou user
     giveResponse(message,sc);
+    
     
     return true;
   }
@@ -188,14 +201,48 @@ public class ChatServer
 	  // se for comando
 	  if(message.charAt(0)=='/'){
 		  String[] msg_pieces = message.split("\\s");
+		  User aux = chatters.get(socket);
 		  switch(msg_pieces[0]){
 		  case "/nick":
-			  //init 	/nick nome && !disponível(nome)
-			  //init 	/nick nome && disponível(nome)
-			  //outside 	/nick nome && !disponível(nome)
-			  //outside 	/nick nome && disponível(nome)
-			  //inside 	/nick nome && !disponível(nome)
-			  //inside 	/nick nome && disponível(nome)
+			//init
+			  if(aux.getState().equals("init")){
+				  ///nick nome && !disponível(nome)  
+				  if(chatters.containsKey(msg_pieces[1])){
+					  // ERROR
+				  }
+				  ///nick nome && disponível(nome)
+				  else if(!chatters.containsKey(msg_pieces[1])){
+					  aux.setNick(msg_pieces[1]);
+					  aux.setState("outside");
+					  // OK
+				  }
+			  }
+			  //outside
+			  else if(aux.getState().equals("ouside")){
+				  ///nick nome && !disponível(nome)
+				  if(chatters.containsKey(msg_pieces[1])){
+					  //ERROR
+					  //mantem nome antigo
+				  }
+				  ///nick nome && disponível(nome)
+				  else if(!chatters.containsKey(msg_pieces[1])){
+					  //OK
+					  aux.setNick(msg_pieces[1]);
+				  }
+			  }
+			  //inside
+			  else if(aux.getState().equals("inside")){
+				  ///nick nome && !disponível(nome)
+				  if(chatters.containsKey(msg_pieces[1])){
+					  //ERROR
+				  }
+				  ///nick nome && disponível(nome)
+				  else if (!chatters.containsKey(msg_pieces[1])){
+					  // OK para user que mudou 
+					  // NEWNICK antigo novo para os outros da sala
+					  aux.setNick(msg_pieces[1]);
+				  }
+			  }
 			  break;
 		  case "/join":
 			  break;
