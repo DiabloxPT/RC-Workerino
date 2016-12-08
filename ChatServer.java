@@ -273,59 +273,67 @@ public class ChatServer
 			case "/join":
 				//outside 	/join sala
 				if(aux.getState().equals("outside")){
-					/*
-					 * OK para o utilizador
-					JOINED nome para os outros utilizadores na sala
-					inside
-					entrou na sala sala; começa a receber mensagens dessa sala
-					 */
 					aux.setChatRoom(rooms.get(msg_pieces[1]));
 					aux.setState("inside");
 				}
 				//inside 	/join sala
 				else if(aux.getState().equals("inside")){
-					/*
-					 * OK para o utilizador
-					JOINED nome para os outros utilizadores na sala nova
-					LEFT nome para os outros utilizadores na sala antiga
-					entrou na sala sala; começa a receber mensagens dessa sala; 
-					deixa de receber mensagens da sala antiga
-					 */
+					// definir salas nova e antiga
+					chatRoom targetRoom = rooms.get(msg_pieces[1]);
+					chatRoom oldRoom = aux.getChatRoom();
+					// dizer a todos os clientes da sala nova que o aux se vai juntar
 					aux.setChatRoom(rooms.get(msg_pieces[1]));
+					for(User u : targetRoom.getAllClients()){
+						if(!u.getNick().equals(aux.getNick()))
+							serverResponse(u.getSocketChannel(),"JOINED "+aux.getNick()+"\n");
+					}
+					// anunciar aos clientes da sala antiga que aux saiu
+					for(User u : oldRoom.getAllClients()){
+						serverResponse(u.getSocketChannel(), "LEFT "+aux.getNick()+"\n");
+					}
+					
 				}
 				// se estiver em init, msg de erro a dizer que n pode juntar-se sem nick
 				else{
-					
+					serverResponse(aux.getSocketChannel(), "ERROR\n");
 				}
 					break;
 			case "/leave":
 				// dentro de uma sala
 				if(aux.getState().equals("inside")){
-					/*
-					 * OK para o utilizador
-						LEFT nome para os outros utilizadores na sala
-						deixa de receber mensagens
-					 */
-					aux.setState("outside");
+					chatRoom oldRoom = aux.getChatRoom(); 
+					aux.setChatRoom(null); 
+					for(User u : oldRoom.getAllClients()){
+						 serverResponse(u.getSocketChannel(), "LEFT "+aux.getNick()+"\n");
+					 }
+					 aux.setState("outside");
+					 serverResponse(aux.getSocketChannel(), "OK\n");
 				}
 				//fora de qq sala
 				else{
-					//msg de erro a dizer que precisa de estar numa sala pra usar este comando
+					serverResponse(aux.getSocketChannel(), "ERROR\n");
 				}
 				break;
 			case "/bye":
 				//dentro de uma sala
 				if(aux.getState().equals("inside")){
-					/*
-					 * BYE para o utilizador
-						LEFT nome para os outros utilizadores na sala
-						servidor fecha a conexão ao cliente
-					 */
+					// left para os outros clientes da sala
+					chatRoom oldRoom = aux.getChatRoom();
+					aux.setChatRoom(null);
+					for(User u :oldRoom.getAllClients()){
+						serverResponse(u.getSocketChannel(), "LEFT "+aux.getNick()+"\n");
+					}
+					// bye para o cliente que saiu
+					serverResponse(aux.getSocketChannel(), "BYE\n");
+					//fechar aqui conexao a quem saiu
+					aux.getSocketChannel().close();
+					
 				}
 				//fora de uma sala ou mesmo sem nick
 				else{
 					//BYE para o utilizador servidor fecha a conexão ao cliente
-					
+					serverResponse(aux.getSocketChannel(), "BYE\n");
+					aux.getSocketChannel().close();
 				}
 				break;
 			default:
@@ -335,14 +343,12 @@ public class ChatServer
 		// se nao for comando
 		else{
 			if(aux.getState().equals("inside")){
-				/*
-				 * MESSAGE nome mensagem para todos os utilizadores na sala
-				 * necessário escape de / inicial, i.e., / passa a //, // passa a ///, etc
-				 * inside
-				 */
+				for(User u : aux.getChatRoom().getAllClients()){
+					serverResponse(u.getSocketChannel(), "MESSAGE "+aux.getNick()+" "+message);
+				}
 			}
 			else{
-				//ERROR , mantem estado
+				serverResponse(aux.getSocketChannel(), "ERROR\n");
 			}
 		}
 	}	// end of method

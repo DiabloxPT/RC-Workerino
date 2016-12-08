@@ -102,30 +102,30 @@ public class ChatClient {
 			if(broken_msg.length == 1){
 				// executou-se um comando e correu bem
 				if(broken_msg[0].equals("OK")){
-					printMessage("All went well with command: "+command);
+					printMessage("All went well with command: "+command+"\n");
 				}
 				// um comando executado deu asneira
 				else if(broken_msg[0].equals("ERROR")){
-					printMessage("Hum... There's something wrong with "+command);
+					printMessage("Hum... There's something wrong with "+command+"\n");
 				}
 				// saida com sucesso do chat
 				else if(broken_msg[0].equals("BYE")){
-					printMessage("Aaaaaaaaaaaaaaaaand i am outta here!");
+					printMessage("Aaaaaaaaaaaaaaaaand i am outta here!"+"\n");
 				}
 			}
 
 			else{
 				// mudança de nick
 				if (broken_msg[0].equals("NEWNICK")){
-					printMessage("Chat member known as "+broken_msg[1]+" is now named "+broken_msg[2]);
+					printMessage("Chat member known as "+broken_msg[1]+" is now named "+broken_msg[2]+"\n");
 				}
 				// aviso de um novo user na sala
 				else if(broken_msg[0].equals("JOINED")){
-					printMessage("A new user has entered the room, goes by: "+broken_msg[1]);
+					printMessage("A new user has entered the room, goes by: "+broken_msg[1]+"\n");
 				}
 				// aviso de saida de user da sala
 				else if (broken_msg[0].equals("LEFT")) {
-					printMessage("User "+broken_msg[1]+" has left the chat room");
+					printMessage("User "+broken_msg[1]+" has left the chat room"+"\n");
 				}
 			}
 		}
