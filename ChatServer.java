@@ -19,6 +19,25 @@ class User {
 		this.chatRoom = null;
 	}
 	
+	public String getNick(){return this.nick;}
+	public String getState(){return this.state;}
+	public SocketChannel getSocketChannel(){return this.sc;}
+	public String chatRoom(){return this.chatRoom;}
+	
+}
+
+class chatRoom{
+	
+	private String nome;
+	private HashMap<String,User> chatters;
+	
+	chatRoom(String nome){
+		this.nome = nome;
+		this.chatters = new HashMap<String,User>();
+	}
+	
+	public String getRoomName(){return this.nome;}
+	public HashMap<String,User> getAllClients(){return this.chatters;}
 	
 }
 
@@ -156,23 +175,7 @@ public class ChatServer
     // Decode and print the message to stdout
     String message = decoder.decode(buffer).toString();
     System.out.print( message );
-    // daqui
-    String[] msg_broken = message.split("\\s");
-    // /nick /join /leave /bye
-    if(msg_broken[0].equals("//nick")){
-    
-    }
-    else if(msg_broken[0].equals("//join")){
-    	
-    }
-    else if (msg_broken[0].equals("/leave")) {
-		
-	}
-    else if (msg_broken[0].equals("/bye")) {
-		
-	}     
-    
-    //aqui
+
     return true;
   }
 }
