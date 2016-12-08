@@ -95,41 +95,42 @@ public class ChatClient {
 
 		while(true){
 			// ler proxima msg que o sv ns manda
-			fromServer.readLine();
+			String rcvMsg = fromServer.readLine();
+			if(rcvMsg == null) break;
 			// partir a msg em tokens, pelos espaços em branco
-			String[] broken_msg = fromServer.toString().split("\\s");
+			String[] broken_msg = rcvMsg.split("\\s");
 			if(broken_msg.length == 1){
 				// executou-se um comando e correu bem
 				if(broken_msg[0].equals("OK")){
-					this.printMessage("All went well with command: "+command);
+					printMessage("All went well with command: "+command);
 				}
 				// um comando executado deu asneira
 				else if(broken_msg[0].equals("ERROR")){
-					this.printMessage("Hum... There's something wrong with "+command);
+					printMessage("Hum... There's something wrong with "+command);
 				}
 				// saida com sucesso do chat
 				else if(broken_msg[0].equals("BYE")){
-					this.printMessage("Aaaaaaaaaaaaaaaaand i am outta here!");
-					break;
+					printMessage("Aaaaaaaaaaaaaaaaand i am outta here!");
 				}
 			}
 
 			else{
 				// mudança de nick
 				if (broken_msg[0].equals("NEWNICK")){
-					this.printMessage("Chat member known as "+broken_msg[1]+" is now named "+broken_msg[2]);
+					printMessage("Chat member known as "+broken_msg[1]+" is now named "+broken_msg[2]);
 				}
 				// aviso de um novo user na sala
 				else if(broken_msg[0].equals("JOINED")){
-					this.printMessage("A new user has entered the room, goes by: "+broken_msg[1]);
+					printMessage("A new user has entered the room, goes by: "+broken_msg[1]);
 				}
 				// aviso de saida de user da sala
 				else if (broken_msg[0].equals("LEFT")) {
-					this.printMessage("User "+broken_msg[1]+" has left the chat room");
+					printMessage("User "+broken_msg[1]+" has left the chat room");
 				}
 			}
 		}
-
+		
+		clientSocket.close();
 	}
 
 

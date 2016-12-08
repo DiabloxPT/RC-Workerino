@@ -1,9 +1,14 @@
 import java.io.*;
 import java.net.*;
+import java.util.*;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.nio.charset.*;
-import java.util.*;
+import java.util.regex.*;
+
 
 class User {
 
@@ -44,6 +49,8 @@ class chatRoom{
 
 	public String getRoomName(){return this.nome;}
 	public HashMap<String,User> getAllClients(){return this.chatters;}
+	public void addChatter(User chatter) {this.chatters.put(chatter.getNick(), chatter);}
+	public void removeChatter(User chatter) {this.chatters.remove(chatter.getNick());}
 
 }
 
@@ -54,6 +61,7 @@ public class ChatServer
 
 	// Decoder for incoming text -- assume UTF-8
 	static private final Charset charset = Charset.forName("UTF8");
+	static private final CharsetEncoder encoder = charset.newEncoder();
 	static private final CharsetDecoder decoder = charset.newDecoder();
 
 	// users and chat rooms
@@ -119,6 +127,7 @@ public class ChatServer
 
 						// Register it with the selector, for reading
 						sc.register( selector, SelectionKey.OP_READ );
+						chatters.put(sc, new User(sc));
 
 					} else if ((key.readyOps() & SelectionKey.OP_READ) ==
 							SelectionKey.OP_READ) {
@@ -185,19 +194,15 @@ public class ChatServer
 		String message = decoder.decode(buffer).toString();
 		System.out.print( message );
 		// mensagem de um user sem nick
-		if(!chatters.containsKey(sc)){
-			User aux = new User(sc);
-			chatters.put(sc, aux);
-		}
 		// aqui responde a mensagem, independentemente do estado ou user
-		giveResponse(message,sc);
+		giveResponse(sc, message);
 
 
 		return true;
 	}
 
 	// handle the message
-	static private void giveResponse(String message,SocketChannel socket){
+	static private void giveResponse(SocketChannel socket, String message) throws IOException {
 		User aux = chatters.get(socket);
 		// se for comando
 		if(message.charAt(0)=='/'){
@@ -210,12 +215,18 @@ public class ChatServer
 					///nick nome && !disponível(nome)  
 					if(chatters.containsKey(msg_pieces[1])){
 						// ERROR
+						System.out.println("eorororororo");
+						serverResponse(socket, "ERROR\n");
+						return;
 					}
 					///nick nome && disponível(nome)
 					else if(!chatters.containsKey(msg_pieces[1])){
 						aux.setNick(msg_pieces[1]);
 						aux.setState("outside");
 						// OK
+						System.out.println("eorororororo");
+						serverResponse(socket, "OK\n");
+						return;
 					}
 				}
 				//outside
@@ -321,5 +332,9 @@ public class ChatServer
 			}
 		}
 	}	// end of method
+	
+	private static void serverResponse(SocketChannel sc, String message) throws IOException {
+		sc.write(encoder.encode(CharBuffer.wrap(message)));
+	}
 
 }// end of ChatServer
