@@ -217,7 +217,7 @@ public class ChatServer
 					if(nicks.containsKey(msg_pieces[1])){
 						// ERROR
 						serverResponse(socket, "ERROR\n");
-						return;
+						//return;
 					}
 					///nick nome && disponível(nome)
 					else if(!nicks.containsKey(msg_pieces[1])){
@@ -226,7 +226,7 @@ public class ChatServer
 						nicks.put(msg_pieces[1], aux);
 						// OK
 						serverResponse(socket, "OK\n");
-						return;
+						//return;
 					}
 				}
 				//outside
@@ -236,7 +236,7 @@ public class ChatServer
 						//ERROR
 						//mantem nome antigo
 						serverResponse(socket, "ERROR\n");
-						return;
+						//return;
 					}
 					///nick nome && disponível(nome)
 					else if(!nicks.containsKey(msg_pieces[1])){
@@ -245,7 +245,7 @@ public class ChatServer
 						aux.setNick(msg_pieces[1]);
 						nicks.put(msg_pieces[1], aux);
 						serverResponse(socket, "OK\n");
-						return;
+						//return;
 					}
 				}
 				//inside
@@ -254,66 +254,86 @@ public class ChatServer
 					if(nicks.containsKey(msg_pieces[1])){
 						//ERROR
 						serverResponse(socket, "ERROR\n");
-						return;
+						//return;
 					}
 					///nick nome && disponível(nome)
 					else if (!chatters.containsKey(msg_pieces[1])){
 						// OK para user que mudou 
 						// NEWNICK antigo novo para os outros da sala
+						String oldNick = aux.getNick();
 						nicks.remove(aux.getNick());
 						aux.setNick(msg_pieces[1]);
 						nicks.put(msg_pieces[1], aux);
-						User[] roomUsers = aux.getChatRoom().getAllClients();
-						System.out.println(roomUsers);
+						chatRoom targetRoom = aux.getChatRoom();
+						for(User u : targetRoom.getAllClients()){
+							if(u.getNick() != aux.getNick())
+								serverResponse(u.getSocketChannel(),"NEWNICK "+oldNick+" "+aux.getNick()+"\n");
+						}
 						serverResponse(socket, "OK\n");
-						return;
+						//return;
 					}
 				}
 				break;
 			case "/join":
 				// se a sala nao existir, tem de a criar
-				if(!rooms.containsKey(msg_pieces)[1]) chatRoom aux = new chatRoom(msg_pieces[1]);
+				if(!rooms.containsKey(msg_pieces[1])) rooms.put(msg_pieces[1], new chatRoom(msg_pieces[1]));
 				//outside 	/join sala
 				if(aux.getState().equals("outside")){
+					chatRoom room = rooms.get(msg_pieces[1]);
 					aux.setChatRoom(rooms.get(msg_pieces[1]));
+					room.addChatter(aux);
 					aux.setState("inside");
+					for(User u : room.getAllClients()){
+						if(!u.getNick().equals(aux.getNick()))
+							serverResponse(u.getSocketChannel(),"JOINED "+aux.getNick()+"\n");
+					}
+					serverResponse(socket, "OK\n");
+					//return;
 				}
 				//inside 	/join sala
 				else if(aux.getState().equals("inside")){
 					// definir salas nova e antiga
 					chatRoom targetRoom = rooms.get(msg_pieces[1]);
 					chatRoom oldRoom = aux.getChatRoom();
+					oldRoom.removeChatter(aux);
+					aux.setChatRoom(targetRoom);
+					targetRoom.addChatter(aux);
 					// dizer a todos os clientes da sala nova que o aux se vai juntar
 					aux.setChatRoom(rooms.get(msg_pieces[1]));
 					for(User u : targetRoom.getAllClients()){
-						if(!u.getNick().equals(aux.getNick()))
+						if(u.getNick() != aux.getNick())
 							serverResponse(u.getSocketChannel(),"JOINED "+aux.getNick()+"\n");
 					}
 					// anunciar aos clientes da sala antiga que aux saiu
 					for(User u : oldRoom.getAllClients()){
 						serverResponse(u.getSocketChannel(), "LEFT "+aux.getNick()+"\n");
 					}
-					
+					//return;
 				}
 				// se estiver em init, msg de erro a dizer que n pode juntar-se sem nick
 				else{
 					serverResponse(aux.getSocketChannel(), "ERROR\n");
+					//return;
 				}
-					break;
+				break;
 			case "/leave":
 				// dentro de uma sala
 				if(aux.getState().equals("inside")){
-					chatRoom oldRoom = aux.getChatRoom(); 
+					chatRoom oldRoom = aux.getChatRoom();
+					oldRoom.removeChatter(aux);
 					aux.setChatRoom(null); 
 					for(User u : oldRoom.getAllClients()){
-						 serverResponse(u.getSocketChannel(), "LEFT "+aux.getNick()+"\n");
+						if(u.getNick() != aux.getNick())
+							serverResponse(u.getSocketChannel(), "LEFT "+aux.getNick()+"\n");
 					 }
 					 aux.setState("outside");
 					 serverResponse(aux.getSocketChannel(), "OK\n");
+					 //return;
 				}
 				//fora de qq sala
 				else{
 					serverResponse(aux.getSocketChannel(), "ERROR\n");
+					//return;
 				}
 				break;
 			case "/bye":
@@ -321,42 +341,74 @@ public class ChatServer
 				if(aux.getState().equals("inside")){
 					// left para os outros clientes da sala
 					chatRoom oldRoom = aux.getChatRoom();
+					oldRoom.removeChatter(aux);
 					aux.setChatRoom(null);
 					for(User u :oldRoom.getAllClients()){
-						serverResponse(u.getSocketChannel(), "LEFT "+aux.getNick()+"\n");
+						if(u.getNick() != aux.getNick())
+							serverResponse(u.getSocketChannel(), "LEFT "+aux.getNick()+"\n");
 					}
+					nicks.remove(aux.getNick());
+					chatters.remove(aux.getSocketChannel());
 					// bye para o cliente que saiu
 					serverResponse(aux.getSocketChannel(), "BYE\n");
 					//fechar aqui conexao a quem saiu
-					aux.getSocketChannel().close();
-					
+					endConnection(aux.getSocketChannel());
+					//return;
 				}
 				//fora de uma sala ou mesmo sem nick
-				else{
+				else {
 					//BYE para o utilizador servidor fecha a conexão ao cliente
+					nicks.remove(aux.getNick());
+					chatters.remove(aux.getSocketChannel());
 					serverResponse(aux.getSocketChannel(), "BYE\n");
-					aux.getSocketChannel().close();
+					endConnection(aux.getSocketChannel());
+					//return;
 				}
 				break;
 			default:
+				if(aux.getState().equals("inside")){
+					chatRoom targetRoom = aux.getChatRoom();
+					for(User u : targetRoom.getAllClients()){
+						serverResponse(u.getSocketChannel(), "MESSAGE "+aux.getNick()+" "+message);
+					}
+					//return;
+				}
+				else{
+					serverResponse(aux.getSocketChannel(), "ERROR\n");
+					//return;
+				}
 				break;
 			}
 		}
 		// se nao for comando
 		else{
 			if(aux.getState().equals("inside")){
-				for(User u : aux.getChatRoom().getAllClients()){
+				chatRoom targetRoom = aux.getChatRoom();
+				for(User u : targetRoom.getAllClients()){
 					serverResponse(u.getSocketChannel(), "MESSAGE "+aux.getNick()+" "+message);
 				}
+				return;
 			}
 			else{
 				serverResponse(aux.getSocketChannel(), "ERROR\n");
+				return;
 			}
 		}
 	}	// end of method
 	
 	private static void serverResponse(SocketChannel sc, String message) throws IOException {
 		sc.write(encoder.encode(CharBuffer.wrap(message)));
+	}
+
+	private static void endConnection(SocketChannel sc) throws IOException {
+		Socket s  = sc.socket();
+
+		try {
+			System.out.println("Closing connection to " + s);
+			sc.close();
+		} catch (IOException ex) {
+			System.err.println("Error closing socket " + s + "! (" + ex + ")");
+		}
 	}
 
 }// end of ChatServer

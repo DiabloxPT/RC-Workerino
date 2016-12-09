@@ -128,6 +128,15 @@ public class ChatClient {
 				else if (broken_msg[0].equals("LEFT")) {
 					printMessage("User "+broken_msg[1]+" has left the chat room"+"\n");
 				}
+				else if(broken_msg[0].equals("MESSAGE")) {
+					printMessage(broken_msg[1]+": ");
+
+					for(int i = 2; i < broken_msg.length; i++) {
+						printMessage(broken_msg[i] + " ");
+					}
+
+					printMessage("\n");
+				}
 			}
 		}
 		
