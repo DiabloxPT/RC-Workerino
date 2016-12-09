@@ -373,6 +373,18 @@ public class ChatServer
 					//return;
 				}
 				break;
+			case "/priv":
+				User target = nicks.get(msg_pieces[1]);
+				String priv_msg ="";
+				// reconstruir msg
+				for(int i=2;i<msg_pieces.length;i++){
+					priv_msg.concat(msg_pieces[i]+" ");
+				}
+				//enviar
+				serverResponse(target.getSocketChannel(),"PRIV "+priv_msg+"\n");
+				
+				
+				break;
 			default:
 				if(aux.getState().equals("inside")){
 					chatRoom targetRoom = aux.getChatRoom();

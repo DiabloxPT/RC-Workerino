@@ -137,6 +137,12 @@ public class ChatClient {
 
 					printMessage("\n");
 				}
+				else if(broken_msg[0].equals("PRIV")){
+					for(int i=0; i<broken_msg.length;i++){
+						printMessage(broken_msg[i]+" ");
+					}
+					printMessage("\n");
+				}
 			}
 		}
 		
