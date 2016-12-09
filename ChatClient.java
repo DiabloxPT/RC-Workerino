@@ -111,7 +111,7 @@ public class ChatClient {
 				// saida com sucesso do chat
 				else if(broken_msg[0].equals("BYE")){
 					printMessage("Aaaaaaaaaaaaaaaaand i am outta here!"+"\n");
-					this.clientSocket.close();
+					//this.clientSocket.close();
 				}
 			}
 

@@ -51,6 +51,7 @@ class chatRoom{
 	public User[] getAllClients(){return this.chatters.values().toArray(new User[this.chatters.size()]);}
 	public void addChatter(User chatter) {this.chatters.put(chatter.getNick(), chatter);}
 	public void removeChatter(User chatter) {this.chatters.remove(chatter.getNick());}
+	public boolean isEmpty(){return this.chatters.size() == 0;}
 
 }
 
@@ -304,11 +305,14 @@ public class ChatServer
 						if(u.getNick() != aux.getNick())
 							serverResponse(u.getSocketChannel(),"JOINED "+aux.getNick()+"\n");
 					}
+					
 					// anunciar aos clientes da sala antiga que aux saiu
 					for(User u : oldRoom.getAllClients()){
 						serverResponse(u.getSocketChannel(), "LEFT "+aux.getNick()+"\n");
 					}
-					//return;
+					
+					// eliminar sala se ficar vazia
+					if(oldRoom.isEmpty())rooms.remove(oldRoom);
 				}
 				// se estiver em init, msg de erro a dizer que n pode juntar-se sem nick
 				else{
@@ -326,6 +330,8 @@ public class ChatServer
 						if(u.getNick() != aux.getNick())
 							serverResponse(u.getSocketChannel(), "LEFT "+aux.getNick()+"\n");
 					 }
+					if(oldRoom.isEmpty())rooms.remove(oldRoom);
+
 					 aux.setState("outside");
 					 serverResponse(aux.getSocketChannel(), "OK\n");
 					 //return;
@@ -349,6 +355,8 @@ public class ChatServer
 					}
 					nicks.remove(aux.getNick());
 					chatters.remove(aux.getSocketChannel());
+					if(oldRoom.isEmpty())rooms.remove(oldRoom);
+
 					// bye para o cliente que saiu
 					serverResponse(aux.getSocketChannel(), "BYE\n");
 					//fechar aqui conexao a quem saiu
@@ -368,9 +376,13 @@ public class ChatServer
 			default:
 				if(aux.getState().equals("inside")){
 					chatRoom targetRoom = aux.getChatRoom();
-					String aux_message = message.substring(1);
-					for(User u : targetRoom.getAllClients()){
-						serverResponse(u.getSocketChannel(), "MESSAGE "+aux.getNick()+" "+aux_message);
+					if(message.charAt(0)!= message.charAt(1))
+						serverResponse(aux.getSocketChannel(), "ERROR\n");
+					else{
+						String aux_message = message.substring(1);
+						for(User u : targetRoom.getAllClients()){
+							serverResponse(u.getSocketChannel(), "MESSAGE "+aux.getNick()+" "+aux_message);
+						}
 					}
 					//return;
 				}
