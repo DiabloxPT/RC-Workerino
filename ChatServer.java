@@ -368,8 +368,9 @@ public class ChatServer
 			default:
 				if(aux.getState().equals("inside")){
 					chatRoom targetRoom = aux.getChatRoom();
+					String aux_message = message.substring(1);
 					for(User u : targetRoom.getAllClients()){
-						serverResponse(u.getSocketChannel(), "MESSAGE "+aux.getNick()+" "+message);
+						serverResponse(u.getSocketChannel(), "MESSAGE "+aux.getNick()+" "+aux_message);
 					}
 					//return;
 				}
