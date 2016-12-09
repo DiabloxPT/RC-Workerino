@@ -381,7 +381,8 @@ public class ChatServer
 					priv_msg.concat(msg_pieces[i]+" ");
 				}
 				//enviar
-				serverResponse(target.getSocketChannel(),"PRIV "+priv_msg+"\n");
+				serverResponse(target.getSocketChannel(),"PRIV "+aux.getNick()+" "+message+"\n");
+				serverResponse(aux.getSocketChannel(), "OK\n");
 				
 				
 				break;
