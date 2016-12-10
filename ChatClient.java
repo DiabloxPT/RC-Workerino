@@ -102,7 +102,7 @@ public class ChatClient {
 			if(broken_msg.length == 1){
 				// executou-se um comando e correu bem
 				if(broken_msg[0].equals("OK")){
-					printMessage("All went well with command: "+command+"\n");
+					printMessage("Command: "+command+" accepted.\n");
 				}
 				// um comando executado deu asneira
 				else if(broken_msg[0].equals("ERROR")){
@@ -110,7 +110,7 @@ public class ChatClient {
 				}
 				// saida com sucesso do chat
 				else if(broken_msg[0].equals("BYE")){
-					printMessage("Aaaaaaaaaaaaaaaaand i am outta here!"+"\n");
+					printMessage("Have a nice day!"+"\n");
 					//this.clientSocket.close();
 				}
 			}
@@ -122,7 +122,7 @@ public class ChatClient {
 				}
 				// aviso de um novo user na sala
 				else if(broken_msg[0].equals("JOINED")){
-					printMessage("A new user has entered the room, goes by: "+broken_msg[1]+"\n");
+					printMessage("A new user has entered the room, welcome: "+broken_msg[1]+"\n");
 				}
 				// aviso de saida de user da sala
 				else if (broken_msg[0].equals("LEFT")) {

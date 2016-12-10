@@ -195,15 +195,14 @@ public class ChatServer
 		// Decode and print the message to stdout
 		String message = decoder.decode(buffer).toString();
 		System.out.print( message );
-		// mensagem de um user sem nick
-		// aqui responde a mensagem, independentemente do estado ou user
+		// aqui responde a mensagem, independentemente do estado do user
 		giveResponse(sc, message);
 
 
 		return true;
 	}
 
-	// handle the message
+	// agir conforme o que vem na mensagem
 	static private void giveResponse(SocketChannel socket, String message) throws IOException {
 		User aux = chatters.get(socket);
 		// se for comando
@@ -212,66 +211,55 @@ public class ChatServer
 			
 			switch(msg_pieces[0]){
 			case "/nick":
-				//init
+				//estado init
 				if(aux.getState().equals("init")){
 					///nick nome && !disponível(nome)  
 					if(nicks.containsKey(msg_pieces[1])){
-						// ERROR
 						serverResponse(socket, "ERROR\n");
-						//return;
 					}
 					///nick nome && disponível(nome)
 					else if(!nicks.containsKey(msg_pieces[1])){
 						aux.setNick(msg_pieces[1]);
 						aux.setState("outside");
 						nicks.put(msg_pieces[1], aux);
-						// OK
 						serverResponse(socket, "OK\n");
-						//return;
 					}
 				}
 				//outside
 				else if(aux.getState().equals("outside")){
 					///nick nome && !disponível(nome)
 					if(nicks.containsKey(msg_pieces[1])){
-						//ERROR
-						//mantem nome antigo
 						serverResponse(socket, "ERROR\n");
-						//return;
 					}
 					///nick nome && disponível(nome)
 					else if(!nicks.containsKey(msg_pieces[1])){
 						nicks.remove(aux.getNick());
-						//OK
 						aux.setNick(msg_pieces[1]);
 						nicks.put(msg_pieces[1], aux);
 						serverResponse(socket, "OK\n");
-						//return;
 					}
 				}
 				//inside
 				else if(aux.getState().equals("inside")){
 					///nick nome && !disponível(nome)
 					if(nicks.containsKey(msg_pieces[1])){
-						//ERROR
 						serverResponse(socket, "ERROR\n");
-						//return;
 					}
 					///nick nome && disponível(nome)
 					else if (!chatters.containsKey(msg_pieces[1])){
-						// OK para user que mudou 
-						// NEWNICK antigo novo para os outros da sala
 						String oldNick = aux.getNick();
 						nicks.remove(aux.getNick());
 						aux.setNick(msg_pieces[1]);
 						nicks.put(msg_pieces[1], aux);
 						chatRoom targetRoom = aux.getChatRoom();
+						// NEWNICK antigo novo para os outros da sala
 						for(User u : targetRoom.getAllClients()){
 							if(u.getNick() != aux.getNick())
 								serverResponse(u.getSocketChannel(),"NEWNICK "+oldNick+" "+aux.getNick()+"\n");
 						}
+						// OK para user que mudou
 						serverResponse(socket, "OK\n");
-						//return;
+						
 					}
 				}
 				break;
@@ -314,7 +302,7 @@ public class ChatServer
 					// eliminar sala se ficar vazia
 					if(oldRoom.isEmpty())rooms.remove(oldRoom);
 				}
-				// se estiver em init, msg de erro a dizer que n pode juntar-se sem nick
+				// se estiver em init, msg de erro
 				else{
 					serverResponse(aux.getSocketChannel(), "ERROR\n");
 					//return;
@@ -361,7 +349,6 @@ public class ChatServer
 					serverResponse(aux.getSocketChannel(), "BYE\n");
 					//fechar aqui conexao a quem saiu
 					endConnection(aux.getSocketChannel());
-					//return;
 				}
 				//fora de uma sala ou mesmo sem nick
 				else {
